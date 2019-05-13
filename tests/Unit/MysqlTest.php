@@ -11,5 +11,12 @@ class MysqlTest extends TestCase
     {
         $this->assertTrue(class_exists($this->_class));
     }
+
+    // public function testClassCanBeInstatiated()
+    // {
+	// 	$object = new $this->_class;
+
+    //     $this->assertInstanceOf($this->_class, new $this->_class);
+    // }
 }
 ?>

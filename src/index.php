@@ -1,7 +1,10 @@
 <?php
 require_once "Mysql.php";
+require_once "MysqlDatabase.php";
 
+$db = new MysqlDatabase();
 ?>
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -15,7 +18,7 @@ require_once "Mysql.php";
     <title>Hello, world!</title>
   </head>
   <body>
-    <h1>Hello, world!</h1>
+    <h1>MysqlGenerator</h1>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->

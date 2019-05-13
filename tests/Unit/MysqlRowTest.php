@@ -3,9 +3,9 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
-class MysqlDatabaseTest extends TestCase
+class MysqlRowTest extends TestCase
 {
-    private $_class = "MysqlDatabase";
+    private $_class = "MysqlRow";
 
     public function testClassExists()
     {

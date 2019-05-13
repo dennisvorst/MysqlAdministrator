@@ -1,10 +1,12 @@
 <?php 
 class MysqlColumn{
-    var $_header;
-    var $_server;
-    var $_table;
-    var $_name;
-    var $_comment;
+    private $_header;
+    private $_server;
+    private $_table;
+    private $_name;
+    private $_comment;
+
+    private $_length;
 
     function __construct(array $column)
     {
@@ -32,6 +34,30 @@ class MysqlColumn{
         }
 
         return "<a href='index.php?server=" . $this->_server . "&table=" . $this->_table . "&orderby=" . $this->_name . "&direction=" . $direction . "'>" . $title . "</a>";
+    }
+
+    
+    function getLength(string $datatype) : int
+    {
+        switch ($datatype)
+        {
+            case "TINYINT":
+                $this->_length = 4;
+                break;
+            case "SMALLINT":
+                $this->_length = 6;
+                break;
+            case "INT":
+                $this->_length =11;
+                break;
+            case "BIGINT":
+                $this->_length = 20;
+                break;
+            default:
+                $this->_length = 40;
+                break;
+        }
+        return $this->_length;
     }
 
     function getColumn() : string 
