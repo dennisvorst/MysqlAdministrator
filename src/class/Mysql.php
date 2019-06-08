@@ -6,15 +6,15 @@ class Mysql{
     private $_db;
     private $_servers = [];
 
-    function __construct(Database $db){
+    function __construct(MysqlDatabase $db){
         $this->_db = $db;
     }
 
-    private function _getServers(){
+    function getServers(){
         if (empty($this->_servers))
         {
             $sql = "SELECT * FROM information_schema.schemata";
-            $items = $this->_db->queryDb($sql);
+            $items = $this->_db->executeQuery($sql);
             foreach ($items as $item)
             {
                 $server = new MysqlServer($this->_db, $item);

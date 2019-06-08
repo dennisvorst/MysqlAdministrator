@@ -6,7 +6,7 @@ class MysqlServer{
     private $_db;
     private $_tables = [];
 
-    function __construct(Database $db, array $server)
+    function __construct(MysqlDatabase $db, array $server)
     {
         $this->_db = $db;
         $this->_name = $server['SCHEMA_NAME'];
@@ -14,7 +14,7 @@ class MysqlServer{
 
     function getUrl() : string
     {
-        return "<a href='index.php?server=" . $this->_name . "'>" . $this->_name . "</a><br />\n";
+        return "<a href='controller.php?" . $this->_getQueryString() . "'>" . $this->_name . "</a><br />\n";
     }
 
     function showTablesPage() : string
@@ -30,19 +30,37 @@ class MysqlServer{
         return $html;
     }
 
-    private function _getTables(){
+    function getTables(){
         if (empty($this->_tables))
         {
             $sql = "SELECT * FROM information_schema.tables WHERE TABLE_SCHEMA = '" . $this->_name . "'";
-            $items = $this->_db->queryDb($sql);
+            $items = $this->_db->executeQuery($sql);
             foreach ($items as $item)
             {
                 $table = new MysqlTable($this->_db, $item);
                 array_push($this->_tables, $table);
             }
-        } 
+        }
         return $this->_tables;
     }
 
+	function getName()
+	{
+		return $this->_name;
+	}
+
+    function getBreadCrumb(bool $isActive = false) : string
+    {
+        if ($isActive)
+        {
+            return "<li class='breadcrumb-item active' aria-current='page'>" . $this->getName() . "</li>\n";
+        } else {
+            return "<li class='breadcrumb-item'><a href='controller.php?" . $this->_getQueryString() . "'>" . $this->getName() . "</a></li>\n";
+        }
+    }
+    function _getQueryString()
+    {
+        return "serverName=" . $this->_name;
+    }
 }
 ?>
