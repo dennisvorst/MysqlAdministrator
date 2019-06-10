@@ -19,13 +19,9 @@ class HtmlField
     /** Checkbox */
     static function getCheckbox(array $params, bool $isChecked = false, bool $isRequired = false) : string
     {
-        $keys = array_keys($params);
+		$attr = HtmlField::_getAttributes($params);
 
-        $html = "<input type='checkbox'";
-        foreach($keys as $key)
-        {
-            $html .= " " . $key . "='" . $params[$key] . "'";
-        }
+        $html = "<input type='checkbox' " . $attr;
         if ($isRequired)
         {
             $html .= " required";
@@ -35,6 +31,13 @@ class HtmlField
             $html .= " checked";
         } 
         $html .= ">";
+
+		/* make sure there is an empty property uusing a value. */
+		$params['value'] = 0;
+		$attr = HtmlField::_getAttributes($params);
+
+		$html = "<input type='hidden' " . $attr . " />\n" . $html;
+
         return $html;
     }
 
@@ -97,5 +100,17 @@ class HtmlField
     {
 
     }
+
+	private static function _getAttributes(array $params) : string 
+	{
+		$attr = "";
+		$keys = array_keys($params);
+		
+        foreach($keys as $key)
+        {
+            $attr .= (empty($attr)?"":" ") . $key . "='" . $params[$key] . "'";
+        }	
+		return $attr;
+	}
 }
 ?>

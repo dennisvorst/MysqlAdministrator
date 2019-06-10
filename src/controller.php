@@ -70,7 +70,7 @@ switch ($action)
 		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $_GET['serverName'], 'TABLE_NAME' => $_GET['tableName']]);
 		$mysqlTable->insertRecord($_GET);
 
-		header('Location: index.php?' . http_build_query(['serverName' => $_GET['serverName'], 'tableName' => $_GET['tableName'], "msg"=>"record inserted", "type"=>"success"]));
+//		header('Location: index.php?' . http_build_query(['serverName' => $_GET['serverName'], 'tableName' => $_GET['tableName'], "msg"=>"record inserted", "type"=>"success"]));
 		break;
 
 	case "delete":

@@ -147,11 +147,12 @@ class MysqlField
     /** return the sql query value for insert and update */
     function getQueryValue()
     {
+		print_r($this->_name . "<br/>");
+		print_r($this->_dataType . "<br/>");
         if (empty($this->_value))
         {
             return "NULL";
         } else {
-
             switch ($this->_dataType)
             {
                 /** datevalues */
@@ -178,7 +179,8 @@ class MysqlField
                 case "set":
 
                     return "\"" . $this->_value . "\"";
-                case "default":
+					break;
+                default:
                     /**
                      * tinyint
                      * smallint
@@ -193,7 +195,8 @@ class MysqlField
                      * boolean
                      * serial
                      */
-                    return $this->_value;
+                    return "" . $this->_value;
+					break;
             }
         }
     }

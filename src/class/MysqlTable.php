@@ -37,6 +37,7 @@ class MysqlTable{
         $keys = array_keys($columns);
         $valueString = "";
 
+		 print_r($values);
         foreach ($keys as $key)
         {
             $value = (key_exists($key, $values) ? $values[$key] : null);
@@ -49,7 +50,7 @@ class MysqlTable{
             }
         }
 
-        $sql = "INSERT INTO " . $this->_getFullTableName() . "(" . implode(", ", $keys) . ")";
+        $sql = "INSERT INTO " . $this->_getFullTableName() . "(" . implode(", ", $keys) . ") ";
         $sql .= "VALUES (" . $valueString . ")"; 
 
         $id = $this->_db->updateDatabase($sql);
