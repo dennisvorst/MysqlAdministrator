@@ -19,7 +19,8 @@ class HtmlField
     /** Checkbox */
     static function getCheckbox(array $params, bool $isChecked = false, bool $isRequired = false) : string
     {
-		$attr = HtmlField::_getAttributes($params);
+        $params['value'] = 1;
+        $attr = HtmlField::_getAttributes($params);
 
         $html = "<input type='checkbox' " . $attr;
         if ($isRequired)

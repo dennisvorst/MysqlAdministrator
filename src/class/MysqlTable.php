@@ -37,16 +37,16 @@ class MysqlTable{
         $keys = array_keys($columns);
         $valueString = "";
 
-		 print_r($values);
+		print_r($values);
         foreach ($keys as $key)
         {
             $value = (key_exists($key, $values) ? $values[$key] : null);
             $mysqlField = new MysqlField($columns[$key], $value);
-            if (empty($valueString))
+            if (strlen($valueString) > 0)
             {
-                $valueString .= $mysqlField->getQueryValue();
-            } else {
                 $valueString .= ", " . $mysqlField->getQueryValue();
+            } else {
+                $valueString .= $mysqlField->getQueryValue();
             }
         }
 

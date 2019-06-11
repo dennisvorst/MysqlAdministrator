@@ -147,56 +147,65 @@ class MysqlField
     /** return the sql query value for insert and update */
     function getQueryValue()
     {
-		print_r($this->_name . "<br/>");
-		print_r($this->_dataType . "<br/>");
-        if (empty($this->_value))
+        if (isset($this->_value))
         {
-            return "NULL";
-        } else {
-            switch ($this->_dataType)
+            if (empty($this->_value))
             {
-                /** datevalues */
-                case "date":
-                case "datetime":
-                case "timestamp":
-                case "time":
-                case "year":
+                if (is_numeric($this->_value))
+                {
+                    return $this->_value;
+                } else {
+                    // print_r($this->_name . "<br/>");
+                    // print_r($this->_dataType . "<br/>");
+                    // print_r($this->_value . "<br/>");
+                    return "NULL";    
+                }
+            } else {
+                switch ($this->_dataType)
+                {
+                    /** datevalues */
+                    case "date":
+                    case "datetime":
+                    case "timestamp":
+                    case "time":
+                    case "year":
 
-                /** string values */
-                case "char":
-                case "varchar":
-                case "text":
-                case "tinytext":
-                case "mediumtext":
-                case "longtext":
-                case "binary":
-                case "varbinary":
-                case "tinyblob":
-                case "mediumblob":
-                case "blob":
-                case "longblob":
-                case "enum":
-                case "set":
+                    /** string values */
+                    case "char":
+                    case "varchar":
+                    case "text":
+                    case "tinytext":
+                    case "mediumtext":
+                    case "longtext":
+                    case "binary":
+                    case "varbinary":
+                    case "tinyblob":
+                    case "mediumblob":
+                    case "blob":
+                    case "longblob":
+                    case "enum":
+                    case "set":
 
-                    return "\"" . $this->_value . "\"";
-					break;
-                default:
-                    /**
-                     * tinyint
-                     * smallint
-                     * mediumint
-                     * int
-                     * bigint
-                     * decimal
-                     * float
-                     * double
-                     * real
-                     * bit
-                     * boolean
-                     * serial
-                     */
-                    return "" . $this->_value;
-					break;
+                        return "\"" . $this->_value . "\"";
+                        break;
+                    default:
+                        /**
+                         * tinyint
+                         * smallint
+                         * mediumint
+                         * int
+                         * bigint
+                         * decimal
+                         * float
+                         * double
+                         * real
+                         * bit
+                         * boolean
+                         * serial
+                         */
+                        return $this->_value;
+                        break;
+                }
             }
         }
     }
