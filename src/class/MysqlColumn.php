@@ -48,6 +48,14 @@ class MysqlColumn{
         return "<a href='controller.php?serverName=" . $this->_serverName . "&tableName=" . $this->_tableName . "&action=sort&orderby=" . $this->_name . "&direction=" . $direction . "'>" . $title . "</a>";
     }
 
+    function getServer() : string
+    {
+        return $this->_serverName;
+    }
+    function getTable() : string
+    {
+        return $this->_tableName;
+    }
     function getColumn() : string
     {
         return $this->_name;

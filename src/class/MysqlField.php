@@ -4,6 +4,9 @@ class MysqlField
 {
     private $_value;
     private $_dataType;
+
+    private $_serverName;
+    private $_tableName;
     private $_name;
     private $_isPrimaryKey = false;
     private $_isMandatory = false;
@@ -12,11 +15,20 @@ class MysqlField
     private $_length;
     private $_isSigned = false;    
 
+	/* relationship information */
+    private $_isChildInRelationship = false;
+    private $_parentSchema;
+    private $_parentTable;
+    private $_parentDField;
 
     function __construct(MysqlColumn $properties, $value = null)
     {
         $this->_value = $value;
         $this->_dataType = $properties->getDatatype();
+
+        $this->_serverName = $properties->getServer();
+        $this->_tableName = $properties->getTable();
+
         $this->_name = $properties->getColumn();
         $this->_isPrimaryKey = $properties->getPrimaryKey();
         $this->_isMandatory = $properties->isMandatory();
@@ -24,6 +36,8 @@ class MysqlField
         $this->_default = $properties->getDefault();
         $this->_lenth = $properties->getLength();
         $this->_isSigned = $properties->isSigned();
+
+		$this->_isChildInRelationship = $this->_isChildInRelationship();
     }
 
     function getTableCell()
@@ -209,5 +223,34 @@ class MysqlField
             }
         }
     }
+
+	private function _isChildInRelationship()
+	{
+		if (!$this->_isChildInRelationship)
+		{
+			$sql = "SELECT REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ";
+			$sql .= "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE ";
+			$sql .= "WHERE REFERENCED_TABLE_NAME IS NOT NULL ";
+			$sql .= "AND REFERENCED_COLUMN_NAME IS NOT NULL ";
+			$sql .= "AND TABLE_SCHEMA = '" . $this->_serverName . "'"; 
+			$sql .= "AND TABLE_NAME = '" . $this->_tableName . "'";
+			$sql .= "AND COLUMN_NAME	= '" . $this->_name . "'";
+			print_r($sql);
+
+			$rows = $this->_db->executeQuery($sql);
+			print_r($rows);
+
+			//private $_parentSchema;
+			//private $_parentTable;
+			//private $_parentDField;
+
+
+			$this->_isChildInRelationship = true;
+
+		
+		}
+		return $this->_isChildInRelationship;
+
+	}
 }
 ?>

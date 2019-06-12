@@ -279,8 +279,6 @@ class MysqlTable{
             </div> 
             <?php
         }
-
-
     }
 
     private function _getColumns()
