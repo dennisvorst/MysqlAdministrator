@@ -4,6 +4,7 @@ require_once "MysqlField.php";
 require_once "MysqlServer.php";
 
 class MysqlRow{
+    private $_db;
     private $_id;
     private $_serverName;
     private $_tableName;
@@ -13,6 +14,8 @@ class MysqlRow{
 
     function __construct(MysqlDatabase $db, string $serverName, string $tableName, int $id, array $properties, array $row)
     {
+        $this->_db = $db;
+
         $this->_id = $id;
         $this->_serverName = $serverName;
         $this->_tableName = $tableName;
@@ -34,7 +37,7 @@ class MysqlRow{
         $keys = array_keys($this->_row);
         foreach($keys as $key)
         {
-            $mysqlField = new MysqlField($this->_properties[$key], $this->_row[$key]);
+            $mysqlField = new MysqlField($this->_db, $this->_properties[$key], $this->_row[$key]);
             $html .=$mysqlField->getTableCell();
         }
         $html .= "<td>\n";

@@ -41,7 +41,7 @@ class MysqlTable{
         foreach ($keys as $key)
         {
             $value = (key_exists($key, $values) ? $values[$key] : null);
-            $mysqlField = new MysqlField($columns[$key], $value);
+            $mysqlField = new MysqlField($this->_db, $columns[$key], $value);
             if (strlen($valueString) > 0)
             {
                 $valueString .= ", " . $mysqlField->getQueryValue();
@@ -87,7 +87,7 @@ class MysqlTable{
         {
             if ($originalRows[$key] !== $values[$key])
             {
-                $mysqlField = new MysqlField($columns[$key], $values[$key]);
+                $mysqlField = new MysqlField($this->_db, $columns[$key], $values[$key]);
                 if (empty($columnList))
                 {
                     $columnList .= " " . $key . " = " . $mysqlField->getQueryValue();
@@ -175,7 +175,7 @@ class MysqlTable{
             <?php
             foreach ($keys as $key)
             {
-                $mysqlField = new MysqlField($columns[$key]);
+                $mysqlField = new MysqlField($this->_db, $columns[$key]);
                 $mysqlField->getEditableObject();
             }
             ?>
@@ -213,7 +213,7 @@ class MysqlTable{
             <?php
             foreach ($keys as $key)
             {
-                $mysqlField = new MysqlField($properties[$key], $row[$key]);
+                $mysqlField = new MysqlField($this->_db, $properties[$key], $row[$key]);
                 $mysqlField->getEditableObject();
             }
             ?>
@@ -389,9 +389,43 @@ class MysqlTable{
     }
 
     /** get hte fully qualified table name */
-    private function _getFullTableName()
+    private function _getFullTableName() : string
     {
         return $this->_serverName . "." . $this->_name;
+    }
+
+    /** get a list of key value pairs to use in a dropdown box */
+    function getValueRepresentation() : array
+    {
+        $pk = $this->_getPrimaryKey();
+        $valrep = $this->_getFirstStringField();
+
+        $sql = "SELECT " . $pk . ", " . $valrep . " FROM " . $this->_getFullTableName() . " ORDER BY " . $valrep;
+        $rows = $this->_db->executeQuery($sql);
+
+        $values = [];
+        foreach ($rows as $row)
+        {
+            $values[$row[$pk]] = $row[$valrep];
+
+        }
+        return $values;
+    }
+
+    private function _getFirstStringField()
+    {
+        $columns = $this->_getColumns();
+
+        foreach ($this->_columns as $column)
+        {
+            switch($column->getDatatype())
+            {
+                case "char":
+                case "varchar":
+                    return $column->getColumn();
+            }
+
+        }
     }
 }
 ?>

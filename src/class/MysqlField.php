@@ -1,7 +1,10 @@
 <?php
 require_once "HtmlField.php";
+
 class MysqlField
 {
+    private $_db;
+
     private $_value;
     private $_dataType;
 
@@ -9,6 +12,7 @@ class MysqlField
     private $_tableName;
     private $_name;
     private $_isPrimaryKey = false;
+    private $_isForeignKey = false;
     private $_isMandatory = false;
     private $_default;
     private $_label;    
@@ -16,13 +20,15 @@ class MysqlField
     private $_isSigned = false;    
 
 	/* relationship information */
-    private $_isChildInRelationship = false;
     private $_parentSchema;
     private $_parentTable;
     private $_parentDField;
+    private $parentObject;
 
-    function __construct(MysqlColumn $properties, $value = null)
+    function __construct(MysqlDatabase $db, MysqlColumn $properties, $value = null)
     {
+        $this->_db = $db;
+
         $this->_value = $value;
         $this->_dataType = $properties->getDatatype();
 
@@ -37,7 +43,7 @@ class MysqlField
         $this->_lenth = $properties->getLength();
         $this->_isSigned = $properties->isSigned();
 
-		$this->_isChildInRelationship = $this->_isChildInRelationship();
+		$this->_isForeignKey = $this->_isForeignKey();
     }
 
     function getTableCell()
@@ -105,6 +111,22 @@ class MysqlField
                 </div>
             </div>
             <?php
+
+        } elseif($this->_isForeignKey()) {
+            /* get the pk and the valrep for the referenced table */
+            $options = $this->_parentObject->getValueRepresentation();
+            ?>
+            <div class="form-group row">
+                <label for="<?php echo $this->_name ?>" class="col-sm-2 control-label"></label>
+                <div class="col-sm-20">
+                    <?php
+                        $params = ["class" => "form-control", "name" => $this->_name, "id" => $this->_name, "value"=>$this->_value];
+                        echo HtmlField::getDropDown($params, $options);
+                    ?>
+                </div>
+            </div>
+            <?php
+
         } else {
             ?>
             <div class="form-group row">
@@ -224,33 +246,32 @@ class MysqlField
         }
     }
 
-	private function _isChildInRelationship()
+    /** is the field part of a foriegn key relationship? */
+	private function _isForeignKey()
 	{
-		if (!$this->_isChildInRelationship)
+		if (!$this->_isForeignKey)
 		{
 			$sql = "SELECT REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ";
 			$sql .= "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE ";
 			$sql .= "WHERE REFERENCED_TABLE_NAME IS NOT NULL ";
 			$sql .= "AND REFERENCED_COLUMN_NAME IS NOT NULL ";
-			$sql .= "AND TABLE_SCHEMA = '" . $this->_serverName . "'"; 
-			$sql .= "AND TABLE_NAME = '" . $this->_tableName . "'";
+			$sql .= "AND TABLE_SCHEMA = '" . $this->_serverName . "' "; 
+			$sql .= "AND TABLE_NAME = '" . $this->_tableName . "' ";
 			$sql .= "AND COLUMN_NAME	= '" . $this->_name . "'";
-			print_r($sql);
 
-			$rows = $this->_db->executeQuery($sql);
-			print_r($rows);
+            $rows = $this->_db->executeQuery($sql);
+            if (!empty($rows))
+            {
+                $this->_parentSchema = $rows[0]['REFERENCED_TABLE_SCHEMA'];
+                $this->_parentTable = $rows[0]['REFERENCED_TABLE_NAME'];
+                $this->_parentField = $rows[0]['REFERENCED_COLUMN_NAME'];
 
-			//private $_parentSchema;
-			//private $_parentTable;
-			//private $_parentDField;
+                $this->_parentObject = new MysqlTable($this->_db, ['TABLE_SCHEMA'=>$this->_parentSchema, 'TABLE_NAME'=>$this->_parentTable]);
 
-
-			$this->_isChildInRelationship = true;
-
-		
+                $this->_isForeignKey = true;
+            }
 		}
-		return $this->_isChildInRelationship;
-
+		return $this->_isForeignKey;
 	}
 }
 ?>

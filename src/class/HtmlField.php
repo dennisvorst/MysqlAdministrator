@@ -79,8 +79,20 @@ class HtmlField
     }
     
     /** Drop Down */
-    static function getDropdown(array $params) : string
+    static function getDropdown(array $params, array $options) : string
     {
+        $html = "<select ";
+        $html .= ">\n";
+
+        $keys = array_keys($options);
+
+        foreach ($keys as $key)
+        {
+            $html .= "  <option value='" . $key . "'>" . $options[$key] . "</option>\n";
+        }
+
+        $html .= "</select>\n";
+        return $html;
 
     }
 
