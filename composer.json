@@ -1,13 +1,25 @@
 {
-    "name": "vorstd/MysqlDatabase",
-    "description": "A class that connects to any Mysql database",
+    "name": "vorstd/administrator",
+    "description": "Mysql administrator project",
     "license": "proprietary",
     "autoload": {
-        "classmap": ["src/"],
-    	"psr-0": { "\\": "src/class/" }         
+      "classmap": [ "src/" ],
+      "psr-0": { "\\": "src/class/" }
     },
-
+    "repositories": [
+      {
+        "type": "vcs",
+        "url": "https://github.com/dennisvorst/mysqldatabase/"
+      }
+    ],
     "require-dev": {
-        "phpunit/phpunit": "^9.5"
+      "phpunit/phpunit": "^9.5"
     },
-}
+    "require": {
+      "vorstd/database": "dev-master"
+    },
+    "scripts": {
+      "test": "phpunit --colors=always --bootstrap ./vendor/autoload.php ./tests/Unit"
+    }
+  }
+  
