@@ -27,7 +27,7 @@ class Mysql{
     {
         $html = "<h1>servers</h1>\n";
 
-        $servers = $this->_getServers();
+        $servers = $this->getServers();
         foreach($servers as $server)
         {
             $html .= $server->getUrl();
