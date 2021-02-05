@@ -1,5 +1,6 @@
 <?php
-require_once "class/MysqlDatabase.php";
+require '../vendor/autoload.php';
+
 require_once "class/MysqlTable.php";
 /** 
  * AlertTypes can be:
@@ -19,9 +20,11 @@ require_once "class/MysqlTable.php";
 
 /** init section */
 $action = "";
-$db = new MysqlDatabase();
+$mysqli = new Mysqli("localhost", "root", "", "museum");
+$log	= new Log("museum.log");
+$db		= new MysqlDatabase($mysqli, $log);
 
-/** get the pparams, it's either or... */
+/** get the params, it's either or... */
 $params = [];
 if (!empty($_POST)) 
 {

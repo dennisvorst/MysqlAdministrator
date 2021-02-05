@@ -15,9 +15,9 @@ class MysqlField
     private $_isForeignKey = false;
     private $_isMandatory = false;
     private $_default;
-    private $_label;    
+    private $_label;
     private $_length;
-    private $_isSigned = false;    
+    private $_isSigned = false;
 
 	/* relationship information */
     private $_parentSchema;
@@ -133,7 +133,7 @@ class MysqlField
                 <label for="<?php echo $this->_name ?>" class="col-sm-2 control-label"><?php echo $this->_label; ?></label>
                 <div class="col-sm-20">
             <?php
-    
+
             switch ($this->_dataType)
             {
                 case "tinyint":
@@ -147,7 +147,7 @@ class MysqlField
                 case "text":
                 case "tinytext":
                 case "mediumtext":
-                case "longtext":                
+                case "longtext":
                     $params = ["name" => $this->_name, "id" => $this->_name, "cols"=>40, "rows"=>5, "value"=>$this->_value];
                     echo HtmlField::getTextarea($params, $this->_isMandatory);
                     break;
@@ -163,7 +163,7 @@ class MysqlField
                 case "float":
                 case "double":
                     $params["min"] = "0";
-        
+
                 default:
                     $params["class"] = "form-control";
                     $params["name"] = $this->_name;
@@ -176,7 +176,7 @@ class MysqlField
             ?>
                 </div>
             </div>
-            <?php    
+            <?php
         }
     }
 
@@ -194,7 +194,7 @@ class MysqlField
                     // print_r($this->_name . "<br/>");
                     // print_r($this->_dataType . "<br/>");
                     // print_r($this->_value . "<br/>");
-                    return "NULL";    
+                    return "NULL";
                 }
             } else {
                 switch ($this->_dataType)
@@ -255,11 +255,11 @@ class MysqlField
 			$sql .= "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE ";
 			$sql .= "WHERE REFERENCED_TABLE_NAME IS NOT NULL ";
 			$sql .= "AND REFERENCED_COLUMN_NAME IS NOT NULL ";
-			$sql .= "AND TABLE_SCHEMA = '" . $this->_serverName . "' "; 
+			$sql .= "AND TABLE_SCHEMA = '" . $this->_serverName . "' ";
 			$sql .= "AND TABLE_NAME = '" . $this->_tableName . "' ";
 			$sql .= "AND COLUMN_NAME	= '" . $this->_name . "'";
 
-            $rows = $this->_db->executeQuery($sql);
+            $rows = $this->_db->select($sql);
             if (!empty($rows))
             {
                 $this->_parentSchema = $rows[0]['REFERENCED_TABLE_SCHEMA'];

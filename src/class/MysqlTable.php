@@ -23,10 +23,10 @@ class MysqlTable{
         $this->_name = $table['TABLE_NAME'];
 
         $this->_orderby = $orderby;
-        $this->_direction = $direction;        
+        $this->_direction = $direction;
     }
 
-    function getUrl() : string 
+    function getUrl() : string
     {
         return "<a href='controller.php?". $this->_getQueryString() . "'>" . $this->_name . "</a><br />\n";
     }
@@ -51,7 +51,7 @@ class MysqlTable{
         }
 
         $sql = "INSERT INTO " . $this->_getFullTableName() . "(" . implode(", ", $keys) . ") ";
-        $sql .= "VALUES (" . $valueString . ")"; 
+        $sql .= "VALUES (" . $valueString . ")";
 
         $id = $this->_db->updateDatabase($sql);
     }
@@ -93,7 +93,7 @@ class MysqlTable{
                     $columnList .= " " . $key . " = " . $mysqlField->getQueryValue();
                 } else {
                     $columnList .= ", " . $key . " = " . $mysqlField->getQueryValue();
-                }    
+                }
             }
         }
 
@@ -118,7 +118,7 @@ class MysqlTable{
         /** create the html */
         $html = "";
         foreach ($rows as $row)
-        {            
+        {
             $mysqlRow = new MysqlRow($this->_db, $this->_serverName, $this->_name, $row[$pk], $properties, $row);
             $html .= $mysqlRow->createHtmlRow();
         }
@@ -171,7 +171,7 @@ class MysqlTable{
         <h1>Creating a record in table <?php echo $this->_getFullTableName(); ?></h1>
 
         <form class="form-horizontal" action="controller.php">
-            <!-- visible fields -->            
+            <!-- visible fields -->
             <?php
             foreach ($keys as $key)
             {
@@ -209,7 +209,7 @@ class MysqlTable{
         <!-- html -->
         <h1>Updating record in table <?php echo $this->_getFullTableName(); ?></h1>
         <form class="form-horizontal" action="controller.php">
-            <!-- visible fields -->            
+            <!-- visible fields -->
             <?php
             foreach ($keys as $key)
             {
@@ -255,13 +255,13 @@ class MysqlTable{
         if (!empty($id))
         {
             $sql = "SELECT * FROM information_schema.key_column_usage WHERE referenced_table_schema = '" . $this->_serverName . "' AND referenced_table_name = '" . $this->_name . "'";
-            $rows = $this->_db->executeQuery($sql);
+            $rows = $this->_db->select($sql);
             ?>
             <div class="btn-group">
                 <?php
                 foreach ($rows as $row)
                 {
-                    $params['action'] = "create_child";                    
+                    $params['action'] = "create_child";
                     $params['parentServer'] = $this->_serverName;
                     $params['parentTable'] = $this->_name;
                     $params['serverName'] = $row['TABLE_SCHEMA'];
@@ -269,28 +269,28 @@ class MysqlTable{
                     $params['columnName'] = $row['COLUMN_NAME'];
                     $params['columnValue'] = $id;
 
-                    
+
                 ?>
                 <a class="btn btn-primary" href="controller.php?<?php echo http_build_query($params); ?>" role="button">Add <?php echo $row['TABLE_NAME']; ?></a>
                 <?php
 
                 }
                 ?>
-            </div> 
+            </div>
             <?php
         }
     }
 
     private function _getColumns()
     {
-        if (empty($this->_columns)) 
+        if (empty($this->_columns))
         {
             /** get the primary key */
             $pk = $this->_getPrimaryKey();
 
             /** get the columns */
             $sql = "SELECT * FROM information_schema.columns WHERE TABLE_SCHEMA = '" . $this->_serverName . "' AND TABLE_NAME = '" . $this->_name . "'";
-            $items = $this->_db->executeQuery($sql);
+            $items = $this->_db->select($sql);
             foreach ($items as $item)
             {
                 $column = new MysqlColumn($item);
@@ -321,21 +321,21 @@ class MysqlTable{
     {
         if (empty($this->_direction)) {
             return "ASC";
-        } 
+        }
         return $this->_direction;
     }
 
-    function getBreadCrumb(bool $isActive = false) : string 
+    function getBreadCrumb(bool $isActive = false) : string
     {
         if ($isActive)
         {
             return "<li class='breadcrumb-item active' aria-current='page'>" . $this->getName() . "</li>\n";
         } else {
             return "<li class='breadcrumb-item'><a href='controller.php?" . $this->_getQueryString() . "'>" . $this->getName() . "</a></li>\n";
-        }        
+        }
     }
- 
-    private function _getQueryString() : string 
+
+    private function _getQueryString() : string
     {
         return "serverName=" . $this->_serverName . "&tableName=" . $this->_name;
     }
@@ -356,7 +356,7 @@ class MysqlTable{
             $sql .= "AND table_name = '" .$this->_name . "' ";
             $sql .= "AND constraint_name = 'PRIMARY'";
 
-            $pk = $this->_db->executeQuery($sql);
+            $pk = $this->_db->select($sql);
             $pk = $pk[0]['column_name'];
         }
         return $pk;
@@ -372,7 +372,7 @@ class MysqlTable{
             {
                 $sql .= " ORDER BY " . $this->_orderby . " " . $this->_getDirection();
             }
-            $this->_records = $this->_db->executeQuery($sql);
+            $this->_records = $this->_db->select($sql);
         }
         return $this->_records;
     }
@@ -384,7 +384,7 @@ class MysqlTable{
 
         /** get the records */
         $sql = "SELECT * FROM " . $this->_getFullTableName() . " WHERE " . $pk . " = " . $id;
-        $row = $this->_db->executeQuery($sql);
+        $row = $this->_db->select($sql);
         return $row[0];
     }
 
@@ -401,7 +401,7 @@ class MysqlTable{
         $valrep = $this->_getFirstStringField();
 
         $sql = "SELECT " . $pk . ", " . $valrep . " FROM " . $this->_getFullTableName() . " ORDER BY " . $valrep;
-        $rows = $this->_db->executeQuery($sql);
+        $rows = $this->_db->select($sql);
 
         $values = [];
         foreach ($rows as $row)

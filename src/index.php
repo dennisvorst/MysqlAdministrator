@@ -1,8 +1,8 @@
 <?php
+require '../vendor/autoload.php';
 
 require_once "class/Mysql.php";
 require_once "class/MysqlBreadcrumb.php";
-require_once "class/MysqlDatabase.php";
 
 $action = "";
 $orderby = "";
@@ -16,10 +16,12 @@ foreach ($keys as $key)
 }
 
 /* instantiation */
-$db 		= new MysqlDatabase();
+$mysqli = new Mysqli("localhost", "root", "", "museum");
+$log	= new Log("museum.log");
+$db		= new MysqlDatabase($mysqli, $log);
 $mysql	= new Mysql($db);
 $server = (isset($serverName) ? new MysqlServer($db, ['SCHEMA_NAME'=>$serverName]) : null);
-$table = (isset($serverName) && isset($tableName) ? new MysqlTable($db, ['TABLE_SCHEMA'=>$serverName, 'TABLE_NAME'=>$tableName], $orderby, $direction) : null);
+$table	= (isset($serverName) && isset($tableName) ? new MysqlTable($db, ['TABLE_SCHEMA'=>$serverName, 'TABLE_NAME'=>$tableName], $orderby, $direction) : null);
 $mysqlBreadcrumb = new MysqlBreadcrumb($server, $table);
 
 ?>

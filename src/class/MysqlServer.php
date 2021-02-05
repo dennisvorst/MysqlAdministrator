@@ -34,7 +34,7 @@ class MysqlServer{
         if (empty($this->_tables))
         {
             $sql = "SELECT * FROM information_schema.tables WHERE TABLE_SCHEMA = '" . $this->_name . "'";
-            $items = $this->_db->executeQuery($sql);
+            $items = $this->_db->select($sql);
             foreach ($items as $item)
             {
                 $table = new MysqlTable($this->_db, $item);
