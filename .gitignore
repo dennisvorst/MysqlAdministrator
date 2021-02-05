@@ -1,3 +1,6 @@
 vendor/
 src/class/config.php
 *.rar
+cmd.bat
+dump.bat
+tests.bat
