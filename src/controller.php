@@ -14,9 +14,9 @@ require_once "class/MysqlTable.php";
  * dark = dark grey
  */
 
+// print_r($_POST);
+// print_r($_GET);
 
-//print_r($_GET);
-//print_r($_POST);
 
 /** init section */
 $action = "";
@@ -34,6 +34,7 @@ if (!empty($_GET))
 {
 	$params = $_GET;
 }
+
 
 /** filter the keys */
 $keys = array_keys($params);
@@ -62,26 +63,35 @@ switch ($action)
 	/** database actions */
 	case "update":
 		/** update the record and return to the page you came from page */
-		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $_GET['serverName'], 'TABLE_NAME' => $_GET['tableName']]);
-		$mysqlTable->updateRecord($_GET);
+		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $serverName, 'TABLE_NAME' => $tableName]);
+		$mysqlTable->updateRecord($_POST);
 
-		header('Location: index.php?' . http_build_query(['serverName' => $_GET['serverName'], 'tableName' => $_GET['tableName'], "msg"=>"record updated", "type"=>"success"]));
+		//header('Location: index.php?' . http_build_query(['serverName' => $serverName, 'tableName' => $tableName, "msg"=>"record updated", "type"=>"success"]));
 		break;
 
 	case "insert":
 		/** insert the record anmd return to the page you came from page */
-		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $_GET['serverName'], 'TABLE_NAME' => $_GET['tableName']]);
-		$mysqlTable->insertRecord($_GET);
+		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $serverName, 'TABLE_NAME' => $tableName]);
 
-//		header('Location: index.php?' . http_build_query(['serverName' => $_GET['serverName'], 'tableName' => $_GET['tableName'], "msg"=>"record inserted", "type"=>"success"]));
+		$id = $mysqlTable->insertRecord($_POST);
+
+		/* class specific actions */
+		if (method_exists($tableName, "postInsert"))
+		{
+			$class = new $tableName($db);
+			$class->postInsert($id, $_FILES);
+		}
+		header('Location: index.php?' . http_build_query(['serverName' => $serverName, 'tableName' => $tableName, "msg"=>"record inserted", "type"=>"success"]));
+
+
 		break;
 
 	case "delete":
 		/** delete the record anmd return to the main page */
-		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $_GET['serverName'], 'TABLE_NAME' => $_GET['tableName']]);
+		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $serverName, 'TABLE_NAME' => $tableName]);
 		$mysqlTable->deleteRecord($id);
 
-		header('Location: controller.php?' . http_build_query(['serverName' => $_GET['serverName'], 'tableName' => $_GET['tableName'], "msg"=>"record deleted", "type"=>"success"]));
+		header('Location: controller.php?' . http_build_query(['serverName' => $serverName, 'tableName' => $tableName, "msg"=>"record deleted", "type"=>"success"]));
 		break;
 
 	/** navigation */

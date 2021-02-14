@@ -1,9 +1,20 @@
 <?php
+
+foreach (glob('class/museum/*.php') as $file)
+{
+    require_once $file;
+}
+
+//require '../vendor/autoload.php';
+
 require_once "HtmlField.php";
 
 class MysqlField
 {
+    private $_debug = true;
+
     private $_db;
+    private $_log;
 
     private $_value;
     private $_dataType;
@@ -25,29 +36,34 @@ class MysqlField
     private $_parentDField;
     private $parentObject;
 
-    function __construct(MysqlDatabase $db, MysqlColumn $properties, $value = null)
+    function __construct(MysqlDatabase $db, MysqlColumn $column, $value = null)
     {
         $this->_db = $db;
+        $this->_log = new Log("mysql.log");
 
         $this->_value = $value;
-        $this->_dataType = $properties->getDatatype();
+        $this->_dataType = $column->getDatatype();
 
-        $this->_serverName = $properties->getServer();
-        $this->_tableName = $properties->getTable();
+        $this->_serverName = $column->getServer();
+        $this->_tableName = $column->getTable();
 
-        $this->_name = $properties->getColumn();
-        $this->_isPrimaryKey = $properties->getPrimaryKey();
-        $this->_isMandatory = $properties->isMandatory();
-        $this->_label = $properties->getLabel();
-        $this->_default = $properties->getDefault();
-        $this->_lenth = $properties->getLength();
-        $this->_isSigned = $properties->isSigned();
+        $this->_name = $column->getColumn();
+        $this->_isPrimaryKey = $column->getPrimaryKey();
+        $this->_isMandatory = $column->isMandatory();
+        $this->_label = $column->getLabel();
+        $this->_default = $column->getDefault();
+        $this->_lenth = $column->getLength();
+        $this->_isSigned = $column->isSigned();
 
 		$this->_isForeignKey = $this->_isForeignKey();
     }
 
     function getTableCell()
     {
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
         switch ($this->_dataType)
         {
             case "int":
@@ -97,6 +113,12 @@ class MysqlField
 
     function getEditableObject()
     {
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
+        print_r($this->_name . " = " . $this->_value . "<br>");
+
         /** hide the prumary key */
         if ($this->_isPrimaryKey)
         {
@@ -111,13 +133,20 @@ class MysqlField
                 </div>
             </div>
             <?php
-
-        } elseif($this->_isForeignKey()) {
+        } 
+        elseif(method_exists($this->_tableName, $this->_name)) 
+        {
+            /** override the default behaviour */
+            $class = new $this->_tableName($this->_db);
+            echo $class->{$this->_name}($this->_value);
+        }
+        elseif($this->_isForeignKey()) 
+        {
             /* get the pk and the valrep for the referenced table */
             $options = $this->_parentObject->getValueRepresentation();
             ?>
             <div class="form-group row">
-                <label for="<?php echo $this->_name ?>" class="col-sm-2 control-label"></label>
+                <label for="<?php echo $this->_name ?>" class="col-sm-2 control-label"><?php echo $this->_label; ?></label>
                 <div class="col-sm-20">
                     <?php
                         $params = ["class" => "form-control", "name" => $this->_name, "id" => $this->_name, "value"=>$this->_value];
@@ -127,7 +156,9 @@ class MysqlField
             </div>
             <?php
 
-        } else {
+        }
+        else 
+        {
             ?>
             <div class="form-group row">
                 <label for="<?php echo $this->_name ?>" class="col-sm-2 control-label"><?php echo $this->_label; ?></label>
@@ -183,6 +214,10 @@ class MysqlField
     /** return the sql query value for insert and update */
     function getQueryValue()
     {
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
         if (isset($this->_value))
         {
             if (empty($this->_value))
@@ -191,9 +226,6 @@ class MysqlField
                 {
                     return $this->_value;
                 } else {
-                    // print_r($this->_name . "<br/>");
-                    // print_r($this->_dataType . "<br/>");
-                    // print_r($this->_value . "<br/>");
                     return "NULL";
                 }
             } else {
@@ -222,7 +254,9 @@ class MysqlField
                     case "enum":
                     case "set":
 
-                        return "\"" . $this->_value . "\"";
+//                        return "\"" . $this->_db->realEscapeString($this->_value) . "\"";
+                        return $this->_value;
+
                         break;
                     default:
                         /**
@@ -243,13 +277,19 @@ class MysqlField
                         break;
                 }
             }
+        } else {
+            return "NULL";
         }
     }
 
-    /** is the field part of a foriegn key relationship? */
+    /** is the field part of a foreign key relationship? */
 	private function _isForeignKey()
 	{
-		if (!$this->_isForeignKey)
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
+        if (!$this->_isForeignKey)
 		{
 			$sql = "SELECT REFERENCED_TABLE_SCHEMA, REFERENCED_TABLE_NAME, REFERENCED_COLUMN_NAME ";
 			$sql .= "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE ";
@@ -273,5 +313,37 @@ class MysqlField
 		}
 		return $this->_isForeignKey;
 	}
+
+    function getQueryDataType() : string 
+    {
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
+        if ($this->_value === "NULL") 
+        {
+            return "";
+        } 
+        elseif (is_numeric($this->_value)) 
+        {
+            return "i";
+        } else {
+            return "s";
+        }
+    }
+
+    function getQueryPlaceholder() : string
+    {
+		if ($this->_debug){
+			$this->_log->write(__METHOD__ );
+		}
+
+        if ($this->_value != "NULL") 
+        {
+            return "?";
+        } else {
+            return $this->_value;
+        }
+    }
 }
 ?>

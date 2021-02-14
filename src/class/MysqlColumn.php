@@ -35,17 +35,23 @@ class MysqlColumn{
 
     function getHeaderUrl(string $orderby = null, string $direction = null) : string
     {
-        /** if the sorted column is the same as the current column we should set the next. Otherwise it is ascending. */
-        if ($orderby == $this->_name)
+        /** don't show the primary key */
+        $html = "";
+        if (!$this->getPrimaryKey())
         {
-            $direction = ($direction == "ASC" ? $direction = "DESC" : $direction = "ASC" );
-        } else {
-            $direction = "ASC";
+            /** if the sorted column is the same as the current column we should set the next. Otherwise it is ascending. */
+            if ($orderby == $this->_name)
+            {
+                $direction = ($direction == "ASC" ? $direction = "DESC" : $direction = "ASC" );
+            } else {
+                $direction = "ASC";
+            }
+    
+            $title = $this->getLabel();
+   
+            $html = "<a href='controller.php?serverName=" . $this->_serverName . "&tableName=" . $this->_tableName . "&action=sort&orderby=" . $this->_name . "&direction=" . $direction . "'>" . $title . "</a>";;
         }
-
-        $title = $this->getLabel();
-
-        return "<a href='controller.php?serverName=" . $this->_serverName . "&tableName=" . $this->_tableName . "&action=sort&orderby=" . $this->_name . "&direction=" . $direction . "'>" . $title . "</a>";
+        return $html;
     }
 
     function getServer() : string

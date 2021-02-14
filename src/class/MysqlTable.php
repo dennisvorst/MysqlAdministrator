@@ -31,49 +31,55 @@ class MysqlTable{
         return "<a href='controller.php?". $this->_getQueryString() . "'>" . $this->_name . "</a><br />\n";
     }
 
-    function insertRecord(array $values)
+    function insertRecord(array $values) : int
     {
         $columns = $this->_getColumns();
         $keys = array_keys($columns);
-        $valueString = "";
+        $queryvalues = [];
+        $types = "";
+        $row = [];
 
-		print_r($values);
         foreach ($keys as $key)
         {
             $value = (key_exists($key, $values) ? $values[$key] : null);
             $mysqlField = new MysqlField($this->_db, $columns[$key], $value);
-            if (strlen($valueString) > 0)
+
+            if (strlen($value) > 0)
             {
-                $valueString .= ", " . $mysqlField->getQueryValue();
+                $queryvalues[] = $mysqlField->getQueryPlaceholder();
+                $types .= $mysqlField->getQueryDataType();
+                $row[] = $mysqlField->getQueryValue();
             } else {
-                $valueString .= $mysqlField->getQueryValue();
+                $queryvalues[] = "NULL";
             }
         }
 
         $sql = "INSERT INTO " . $this->_getFullTableName() . "(" . implode(", ", $keys) . ") ";
-        $sql .= "VALUES (" . $valueString . ")";
-
-        $id = $this->_db->updateDatabase($sql);
+        $sql .= "VALUES (" . implode(", ", $queryvalues) . ")";
+		
+        $id = $this->_db->insert($sql, $types, $row);
+        return $id;
     }
 
     /** delete a record using the primary key */
     function deleteRecord($id)
     {
         $pk = $this->_getPrimaryKey();
-		$sql = "DELETE FROM " . $this->_getFullTableName() . " WHERE " . $pk . " = " . $id;
+		$sql = "DELETE FROM " . $this->_getFullTableName() . " WHERE {$pk} = ?";
 
-        $id = $this->_db->updateDatabase($sql);
+        $id = $this->_db->delete($sql, "i", [$id]);
     }
 
     function updateRecord(array $values)
     {
         /** get the columns */
         $columns = $this->_getColumns();
+        $types = "";
+        $row = [];
 
-        /** get the primary key, and tkae out the value */
+        /** get the primary key, and take out the value */
         $pk = $this->_getPrimaryKey();
-        $id =$values[$pk];
-        $where = "WHERE " . $pk . " = " . $id;
+        $id = $values[$pk];
         unset($values[$pk]);
 
         /** get the original record */
@@ -88,19 +94,31 @@ class MysqlTable{
             if ($originalRows[$key] !== $values[$key])
             {
                 $mysqlField = new MysqlField($this->_db, $columns[$key], $values[$key]);
-                if (empty($columnList))
+                if (!empty($columnList))
                 {
-                    $columnList .= " " . $key . " = " . $mysqlField->getQueryValue();
+                    $columnList .= ", ";
+                }
+                /** it the field has no value supply a NULL else add it to the columnlist */ 
+                $value = $mysqlField->getQueryValue();
+                if ($value  == "NULL")
+                {
+                    $columnList .= $key . " = " . $value;
                 } else {
-                    $columnList .= ", " . $key . " = " . $mysqlField->getQueryValue();
+                    $columnList .= $key . " = ?";
+                    $types .= $mysqlField->getQueryDataType();
+                    $row[] = $value;
                 }
             }
         }
 
         if (!empty($columnList))
         {
-            $sql = "UPDATE " . $this->_getFullTableName() . " SET " . $columnList . " " . $where;
-            $id = $this->_db->updateDatabase($sql);
+            $sql = "UPDATE " . $this->_getFullTableName() . " SET " . $columnList . " WHERE " . $pk . " = ?";
+            $types .= "i";
+            $row[] = $id;
+            print_r($sql);
+
+            $id = $this->_db->update($sql, $types, $row);
         }
     }
 
@@ -170,7 +188,7 @@ class MysqlTable{
         <!-- html -->
         <h1>Creating a record in table <?php echo $this->_getFullTableName(); ?></h1>
 
-        <form class="form-horizontal" action="controller.php">
+        <form class="form-horizontal" action="controller.php" enctype="multipart/form-data" method="POST">
             <!-- visible fields -->
             <?php
             foreach ($keys as $key)
@@ -178,6 +196,13 @@ class MysqlTable{
                 $mysqlField = new MysqlField($this->_db, $columns[$key]);
                 $mysqlField->getEditableObject();
             }
+
+            if (method_exists($this->_name, "addtionalFormProperties"))
+            {
+                $class = new $this->_name();
+                echo $class->addtionalFormProperties();
+
+            } 
             ?>
 
             <!-- control fields -->
@@ -208,7 +233,7 @@ class MysqlTable{
 
         <!-- html -->
         <h1>Updating record in table <?php echo $this->_getFullTableName(); ?></h1>
-        <form class="form-horizontal" action="controller.php">
+        <form class="form-horizontal" action="controller.php" enctype="multipart/form-data" method="POST">
             <!-- visible fields -->
             <?php
             foreach ($keys as $key)
@@ -254,8 +279,8 @@ class MysqlTable{
          */
         if (!empty($id))
         {
-            $sql = "SELECT * FROM information_schema.key_column_usage WHERE referenced_table_schema = '" . $this->_serverName . "' AND referenced_table_name = '" . $this->_name . "'";
-            $rows = $this->_db->select($sql);
+            $sql = "SELECT * FROM information_schema.key_column_usage WHERE referenced_table_schema = ? AND referenced_table_name = ?";
+            $rows = $this->_db->select($sql, "ss", [$this->_serverName, $this->_name]);
             ?>
             <div class="btn-group">
                 <?php
@@ -289,8 +314,8 @@ class MysqlTable{
             $pk = $this->_getPrimaryKey();
 
             /** get the columns */
-            $sql = "SELECT * FROM information_schema.columns WHERE TABLE_SCHEMA = '" . $this->_serverName . "' AND TABLE_NAME = '" . $this->_name . "'";
-            $items = $this->_db->select($sql);
+            $sql = "SELECT * FROM information_schema.columns WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ";
+            $items = $this->_db->select($sql, "ss", [$this->_serverName, $this->_name]);
             foreach ($items as $item)
             {
                 $column = new MysqlColumn($item);
@@ -352,11 +377,11 @@ class MysqlTable{
 
             $sql = "SELECT column_name ";
             $sql .= "FROM information_schema.key_column_usage ";
-            $sql .= "WHERE table_schema = '" . $this->_serverName . "' ";
-            $sql .= "AND table_name = '" .$this->_name . "' ";
+            $sql .= "WHERE table_schema = ? ";
+            $sql .= "AND table_name = ? ";
             $sql .= "AND constraint_name = 'PRIMARY'";
 
-            $pk = $this->_db->select($sql);
+            $pk = $this->_db->select($sql, "ss", [$this->_serverName, $this->_name]);
             $pk = $pk[0]['column_name'];
         }
         return $pk;
@@ -366,12 +391,13 @@ class MysqlTable{
     {
         if(empty($this->_records))
         {
-            $sql = "SELECT * FROM " . $this->_getFullTableName();
+            $sql = "SELECT * FROM " . $this->_getFullTableName(); 
 
             if (!empty($this->_direction) && !empty($this->_orderby))
             {
                 $sql .= " ORDER BY " . $this->_orderby . " " . $this->_getDirection();
             }
+            $sql .= " LIMIT 1, 30";
             $this->_records = $this->_db->select($sql);
         }
         return $this->_records;
@@ -383,8 +409,10 @@ class MysqlTable{
         $pk = $this->_getPrimaryKey();
 
         /** get the records */
-        $sql = "SELECT * FROM " . $this->_getFullTableName() . " WHERE " . $pk . " = " . $id;
-        $row = $this->_db->select($sql);
+        $sql = "SELECT * FROM " . $this->_getFullTableName() . " WHERE " . $pk . " = ? " ;
+        $row = $this->_db->select($sql, "i", [$id]);
+
+        print_r($row[0]);
         return $row[0];
     }
 

@@ -29,64 +29,71 @@ $mysqlBreadcrumb = new MysqlBreadcrumb($server, $table);
 <html lang="en">
   <head>
     <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!-- Latest compiled and minified CSS -->
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
-		<!-- font awesome -->
-		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css" integrity="sha384-oS3vJWv+0UjzBfQzYUhtDYW+Pj2yciDJxpsK1OYPAYjqT085Qq/1cq5FLXAZQ7Ay" crossorigin="anonymous">
+	<!-- initiate font awesome -->
+	<script src="https://kit.fontawesome.com/af1eec186a.js" crossorigin="anonymous"></script>
+
+    <!--[if lt IE 9]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+		<link rel="stylesheet" href="css/style.css" media="screen">
+    <!--[if lte IE 7]><link rel="stylesheet" href="css/style.ie7.css" media="screen" /><![endif]-->
+    <link rel="stylesheet" href="css/style.responsive.css" media="all">
 				
     <title>MysqlGenerator</title>
   </head>
   <body>
-		<!-- if there is a message display it here -->
-		<?php
-		if (isset($msg))
-		{
-		?>
-		<div class="alert alert-<?php echo $type; ?> alert-dismissible fade show" role="alert">
-			<strong><?php echo $msg; ?></strong>
-			<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-			<span aria-hidden="true">&times;</span>
-			</button>
-		</div>
-		<?php 
-		}
-		?>
-		<h1>MysqlGenerator</h1>	
-		<!-- crumb -->
-		<?php
-		echo $mysqlBreadcrumb->createBreadcrumb();
-		?>
+	<!-- if there is a message display it here -->
+	<div class="container">
+		<div class="row">
+			<div class="col-md-auto">
+			<?php
+			if (isset($msg))
+			{
+			?>
+				<div class="alert alert-<?php echo $type; ?> alert-dismissible fade show" role="alert">
+					<strong><?php echo $msg; ?></strong>
+					<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+			<?php 
+			}
+			?>
+			<h1>MysqlGenerator</h1>	
+			<!-- crumb -->
+			<?php
+			echo $mysqlBreadcrumb->createBreadcrumb();
+			?>
 
-		<!-- page -->
-		<?php
-		switch ($action)
-		{
-			case "insert":
-				$table->showInsertPage();
-				break;
+			<!-- page -->
+			<?php
+			switch ($action)
+			{
+				case "insert":
+					$table->showInsertPage();
+					break;
 
-			case "update":
-				$table->showEditPage($id, $action);
-				break;
+				case "update":
+					$table->showEditPage($id, $action);
+					break;
 
-			default:
-				if (!isset($serverName)) 
-				{
-					?>
-					<h2>Servers</h2>
-					<?php		
-					$servers = $mysql->getServers();
-
-					/** server list */
-					foreach ($servers as $server) 
+				default:
+					if (!isset($serverName)) 
 					{
-						echo $server->getUrl();
-					}
-				} else {
+						?>
+						<h2>Servers</h2>
+						<?php		
+						$servers = $mysql->getServers();
+
+						/** server list */
+						foreach ($servers as $server) 
+						{
+							echo $server->getUrl();
+						}
+					} else {
 
 						if (!isset($tableName)) 
 						{
@@ -103,9 +110,13 @@ $mysqlBreadcrumb = new MysqlBreadcrumb($server, $table);
 							/** show the table rows */
 							echo $table->showRecordsPage();
 						}
-				}
-	}
-	?>
+					}
+			}
+			?>
+			</div>
+		</div>
+	</div>
+
 
 
     <!-- Optional JavaScript -->

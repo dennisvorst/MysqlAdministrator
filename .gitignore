@@ -1,6 +1,12 @@
+# ignore the composer stuff
 vendor/
-src/class/config.php
+
+# ignore the logging folder content
+src/logging
+
+# ignore the database specific folders 
+src/class/museum
+
+# ignore some file extensions
 *.rar
-cmd.bat
-dump.bat
-tests.bat
+*.bat

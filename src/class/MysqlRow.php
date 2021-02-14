@@ -32,11 +32,11 @@ class MysqlRow{
 
         $html = "<tr>";            
         $html .= "<td><input type='checkbox' name='' value='0'</td>";
-
         $keys = array_keys($this->_row);
         foreach($keys as $key)
         {
-            $mysqlField = new MysqlField($this->_db, $this->_properties[$key], $this->_row[$key]);
+            $value = (strlen($this->_row[$key]) > 100 ? substr($this->_row[$key], 0, 100) . "..." : $this->_row[$key]);
+            $mysqlField = new MysqlField($this->_db, $this->_properties[$key], $value);
             $html .=$mysqlField->getTableCell();
         }
         $html .= "<td>\n";
