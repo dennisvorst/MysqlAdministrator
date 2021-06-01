@@ -4,6 +4,10 @@ foreach (glob('class/museum/*.php') as $file)
 {
     require_once $file;
 }
+foreach (glob('class/comedy/*.php') as $file)
+{
+    require_once $file;
+}
 
 //require '../vendor/autoload.php';
 
