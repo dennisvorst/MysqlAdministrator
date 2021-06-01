@@ -117,9 +117,7 @@ class MysqlField
 			$this->_log->write(__METHOD__ );
 		}
 
-        print_r($this->_name . " = " . $this->_value . "<br>");
-
-        /** hide the prumary key */
+        /** hide the primary key */
         if ($this->_isPrimaryKey)
         {
             ?>

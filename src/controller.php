@@ -66,7 +66,7 @@ switch ($action)
 		$mysqlTable = new MysqlTable($db, ['TABLE_SCHEMA' => $serverName, 'TABLE_NAME' => $tableName]);
 		$mysqlTable->updateRecord($_POST);
 
-		//header('Location: index.php?' . http_build_query(['serverName' => $serverName, 'tableName' => $tableName, "msg"=>"record updated", "type"=>"success"]));
+		header('Location: index.php?' . http_build_query(['serverName' => $serverName, 'tableName' => $tableName, "msg"=>"record updated", "type"=>"success"]));
 		break;
 
 	case "insert":

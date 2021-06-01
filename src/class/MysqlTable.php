@@ -56,7 +56,6 @@ class MysqlTable{
 
         $sql = "INSERT INTO " . $this->_getFullTableName() . "(" . implode(", ", $keys) . ") ";
         $sql .= "VALUES (" . implode(", ", $queryvalues) . ")";
-		
         $id = $this->_db->insert($sql, $types, $row);
         return $id;
     }
@@ -116,7 +115,6 @@ class MysqlTable{
             $sql = "UPDATE " . $this->_getFullTableName() . " SET " . $columnList . " WHERE " . $pk . " = ?";
             $types .= "i";
             $row[] = $id;
-            print_r($sql);
 
             $id = $this->_db->update($sql, $types, $row);
         }
@@ -199,7 +197,7 @@ class MysqlTable{
 
             if (method_exists($this->_name, "addtionalFormProperties"))
             {
-                $class = new $this->_name();
+                $class = new $this->_name($this->_db);
                 echo $class->addtionalFormProperties();
 
             } 
@@ -397,7 +395,7 @@ class MysqlTable{
             {
                 $sql .= " ORDER BY " . $this->_orderby . " " . $this->_getDirection();
             }
-            $sql .= " LIMIT 1, 30";
+            $sql .= " LIMIT 0, 30";
             $this->_records = $this->_db->select($sql);
         }
         return $this->_records;
@@ -412,7 +410,6 @@ class MysqlTable{
         $sql = "SELECT * FROM " . $this->_getFullTableName() . " WHERE " . $pk . " = ? " ;
         $row = $this->_db->select($sql, "i", [$id]);
 
-        print_r($row[0]);
         return $row[0];
     }
 
